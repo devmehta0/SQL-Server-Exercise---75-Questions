@@ -491,7 +491,7 @@ WHERE
 -- 48    Find customers in store #1 that spent less than $2.99 on individual rentals, but have spent a total higher than $5. 
 
 SELECT
-	DISTINCT p.customer_id
+	p.customer_id
 FROM 
 	customer c
 JOIN
@@ -503,7 +503,8 @@ GROUP BY
 	p.customer_id
 HAVING
 	SUM(amount) > 5
-
+ORDER BY
+	customer_id;
 
 	
 -- SELECT customer_id, sum(amount)
@@ -620,7 +621,7 @@ SELECT
 FROM
 	cte_1
 WHERE 
-	rn IN (1,2);
+	rn < 3;
 
 -- 55    Fetch the top 3 employees in each department earning the max salary.
 WITH cte
@@ -664,10 +665,11 @@ JOIN inventory USING(inventory_id)
 JOIN film USING(film_id)
 WHERE EXTRACT(MONTH FROM return_date) = 5;
 
+
 -- 58    get all Payments Related Details from Previous week 
 SELECT * FROM payment
 WHERE EXTRACT(WEEK FROM payment_date) = (
-	SELECT EXTRACT(WEEK FROM max(payment_date)) - 1 week_num FROM payment)
+	SELECT EXTRACT(WEEK FROM max(payment_date)) - 2 week_num FROM payment)
 
 -- 59    Get all customer related Information from Previous Year
 SELECT * FROM payment
@@ -716,7 +718,7 @@ GROUP BY customer_id
 ORDER BY SUM(amount) DESC LIMIT 5;
 
 -- 65    Display the movie titles of those movies offered in both stores at the same time. 
-SELECT title
+SELECT film_id, title, rental_date
 FROM rental
 JOIN inventory USING(inventory_id)
 JOIN film USING(film_id)
@@ -724,7 +726,7 @@ WHERE staff_id = 1
 
 INTERSECT
 
-SELECT title
+SELECT film_id, title, rental_date
 FROM rental
 JOIN inventory USING(inventory_id)
 JOIN film USING(film_id)
@@ -830,8 +832,15 @@ BEGIN
 	END IF;
 END $$;
 
+CREATE TRIGGER res_log
+AFTER INSERT OR UPDATE OR DELETE
+ON reservation
+FOR EACH ROW
+EXECUTE PROCEDURE res_audit();
+
+
 INSERT INTO reservation(customer_id, inventory_id, reserve_date)
-VALUES(6, 14, CURRENT_DATE);
+VALUES(7, 14, CURRENT_DATE);
 
 DELETE FROM reservation
 WHERE customer_id = 6;
@@ -862,7 +871,7 @@ FOR EACH ROW
 EXECUTE PROCEDURE dvd_max();
 
 INSERT INTO reservation(customer_id, inventory_id, reserve_date)
-VALUES(2, 14, CURRENT_DATE);
+VALUES(6, 15, CURRENT_DATE);
 
 -- 73    create a function which takes year as a argument and return the concatenated result of title which contain 'ful' in it and release year like this (title:release_year) --> use cursor in function 
 CREATE OR REPLACE FUNCTION get_film_titles(p_year INT)
@@ -937,7 +946,7 @@ BEGIN
 	RETURN b;
 END $$;
  
-SELECT fibonaci(10);
+SELECT fibonaci(6);
 
 	
 	
